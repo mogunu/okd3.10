@@ -1,0 +1,22 @@
+$ORIGIN app.openshift.local.
+$TTL 86400
+@	IN	SOA	dns1.openshift.local. hostmaster.openshift.local. (
+			2001062504
+			21600
+			3600
+			604800
+			86400 )
+;
+;
+ IN NS dsnl.openshift.local.
+dns1. IN A 192.168.10.1
+ IN AAAA aaaa:bbbb::1
+os-master1. IN A 192.168.10.6
+os-infra1. IN A 192.168.10.7
+os-node1. IN A 192.168.10.8
+*	300	IN	A	192.168.10.7
+;
+;
+
+console-int.openshift.local.	IN	A	192.168.10.6
+console.openshift.local.	IN	A	192.168.10.6
