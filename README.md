@@ -78,3 +78,137 @@ $ lsblk
 
 $ sudo shutdown -h now
 ```
+Step 8:
+On ansible control server test DNS for master server
+```sh
+[root@master ~]# nslookup master
+Server:         192.168.10.1
+Address:        192.168.10.1#53
+
+Name:   master.techmogun.local
+Address: 192.168.10.5
+```
+Step 9: Download the OpenShift ansible playbooks.
+On ansible control server make sure that the following packages are installed:
+
+“python-passlib” & “httpd-tools”
+```sh
+yum -y install python-passlib httpd-tools
+```
+Step 10: 
+Clone openshift-ansible:
+```sh
+$ git clone https://github.com/openshift/openshift-ansible.git
+$ cd openshift-ansible
+$ git checkout release-3.10
+```
+Step 11: 
+Next we need to create an inventory file where we define target hosts and OpenShift installation strategy. We call this file openshift_inventory and it looks like this:
+
+```sh
+[OSEv3:children]
+masters
+etcd
+nodes
+
+[OSEv3:vars]
+## Ansible user who can login to all nodes through SSH (e.g. ssh root@master)
+ansible_user=root
+
+## Deployment type: "openshift-enterprise" or "origin"
+openshift_deployment_type=origin
+deployment_type=origin
+
+## Specifies the major version
+openshift_release=v3.10
+openshift_pkg_version=-3.10.0
+openshift_image_tag=v3.10.0
+openshift_service_catalog_image_version=v3.10.0
+template_service_broker_image_version=v3.10.0
+osm_use_cockpit=true
+openshift_metrics_install_metrics=True
+openshift_logging_install_logging=False
+
+# https://github.com/openshift/origin-metrics/issues/429
+openshift_metrics_cassandra_image="docker.io/openshift/origin-metrics-cassandra:v3.11.0"
+openshift_metrics_hawkular_metrics_image="docker.io/openshift/origin-metrics-hawkular-metrics:v3.11.0"
+openshift_metrics_heapster_image="docker.io/openshift/origin-metrics-heapster:v3.11.0"
+
+# https://github.com/openshift/origin-metrics/issues/429#issuecomment-417124646
+openshift_metrics_schema_installer_image="docker.io/alv91/origin-metrics-schema-installer:v3.10.0"
+
+## Service address space,  /16 = 65,534 IPs
+openshift_portal_net=172.30.0.0/16
+
+## Pod address space
+osm_cluster_network_cidr=10.128.0.0/14
+
+## Subnet Length of each node, 9 = 510 IPs
+osm_host_subnet_length=9
+
+## Master API  port
+openshift_master_api_port=8443
+
+## Master console port  (e.g. https://console.techmogun.local:443)
+openshift_master_console_port=8443
+
+## Clustering method
+openshift_master_cluster_method=native
+
+## Hostname used by nodes and other cluster internals
+openshift_master_cluster_hostname=master.techmogun.local
+
+## Hostname used by platform users
+openshift_master_cluster_public_hostname=master.techmogun.local
+
+## Application wildcard subdomain
+openshift_master_default_subdomain=apps.techmogun.local
+
+## identity provider
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+
+## Users being created in the cluster
+openshift_master_htpasswd_users={'admin': '$apr1$5gndYjb1$EypyIDRCBYk75LrsWE5yn', 'user1': '$apr1$7V8/.ewC$yuNOUxZLwQwTeLRiHPKpA'}
+
+## Other vars
+containerized=True
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+openshift_disable_check=disk_availability,docker_storage,memory_availability,docker_image_availability
+
+#NFS check bug
+openshift_enable_unsupported_configurations=Trueo
+#Another Bug 1569476 
+skip_sanity_checks=true
+
+openshift_node_kubelet_args="{'eviction-hard': ['memory.available<100Mi'], 'minimum-container-ttl-duration': ['10s'], 'maximum-dead-containers-per-container': ['2'], 'maximum-dead-containers': ['5'], 'pods-per-core': ['10'], 'max-pods': ['25'], 'image-gc-high-threshold': ['80'], 'image-gc-low-threshold': ['60']}"
+
+[OSEv3:vars]
+
+[masters]
+master.techmogun.local
+
+[etcd]
+master.techmogun.local
+
+[nodes]
+master.techmogun.local openshift_schedulable=true ansible_host="{{ lookup('env', '192.168.10.5') }}" openshift_node_group_name="node-config-all-in-one"
+```
+Step 13: 
+Add those values into your inventory file; openshift_master_htpasswd_users & ansible_host ip address.
+
+Step 14:
+Install ansible on the master node
+```sh
+yum -y install epel-release
+yum -y install ansible
+```
+
+Step 15:
+On ansible control host test connectivity to target hosts
+```sh
+ansible -i openshift_inventory OSEv3 -m ping
+master.techmogun.local | SUCCESS => {
+"changed": false,
+"ping": "pong"
+}
+```
