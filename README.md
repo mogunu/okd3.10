@@ -67,15 +67,16 @@ Step 7: Docker Storage Setup (master).
 In virtual machine we need to add one more disk for docker storage (i have just added 100GB) with docker volumes attached as /dev/sdb. We’ll now install and configure docker to use that volume for all local docker storage.
 
 On master server:
-
+```sh
 $ sudo cat <<EOF > /etc/sysconfig/docker-storage-setup
 DEVS=/dev/sdb
 VG=docker-vg
 EOF
 
 $ sudo docker-storage-setup
-
+```
 ## Check results
+```sh
 $ lsblk
 
 $ sudo shutdown -h now
