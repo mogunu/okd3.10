@@ -253,8 +253,81 @@ if it is shown anything in Red please address that before moving to the next ste
 Step 17: This playbook will install the openshift origin
 ```sh
 ansible-playbook -i openshift_inventory playbooks/deploy_cluster.yml
+Output will be
+PLAY RECAP ******************************************************************************************************************************
+localhost                  : ok=12   changed=0    unreachable=0    failed=0
+master.techmogun.local     : ok=829  changed=350  unreachable=0    failed=0
+
+
+INSTALLER STATUS ************************************************************************************************************************
+Initialization              : Complete (0:00:06)
 ```
 Step 18: Post Validation of the installation
 ```sh
 [root@master ~]# oc login -u system:admin -n default
+Logged into "https://master.techmogun.local:8443" as "system:admin" using existing credentials.
 
+You have access to the following projects and can switch between them with 'oc project <projectname>':
+
+  * default
+    kube-public
+    kube-service-catalog
+    kube-system
+    management-infra
+    openshift
+    openshift-ansible-service-broker
+    openshift-infra
+    openshift-logging
+    openshift-node
+    openshift-sdn
+    openshift-template-service-broker
+    openshift-web-console
+
+Using project "default".
+```
+Display the node status:
+```sh
+[root@master openshift-ansible]# oc get nodes
+NAME                     STATUS    ROLES                  AGE       VERSION
+master.techmogun.local   Ready     compute,infra,master   12m       v1.10.0+b81c8f8
+```
+
+Display all services (note the docker registry network)
+```sh
+[root@master ~]#  oc get svc
+NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                   AGE
+docker-registry    ClusterIP   172.30.250.192   <none>        5000/TCP                  9m
+kubernetes         ClusterIP   172.30.0.1       <none>        443/TCP,53/UDP,53/TCP     13m
+registry-console   ClusterIP   172.30.151.242   <none>        9000/TCP                  9m
+router             ClusterIP   172.30.37.136    <none>        80/TCP,443/TCP,1936/TCP   9m
+```
+Step 18:
+Allow insecure access to the docker registry (do it on all nodes)
+```sh
+vi /etc/sysconfig/docker
+
+INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'
+```
+#Restart Docker
+```sh
+systemctl restart docker
+systemctl enable docker
+```
+Step 19:
+add cluster-admin rights to the user
+```sh
+# oc login -u system:admin -n default
+
+## For a user
+
+[root@master ~]# oc adm policy add-cluster-role-to-user cluster-admin user1
+cluster role "cluster-admin" added: "user1"
+
+```
+Now we are ready to login OpenShift Origin instance:
+https://master.techmogun.local:8443
+
+Password reset for the user
+```sh
+htpasswd -b /etc/origin/master/htpasswd user1 password
+```
