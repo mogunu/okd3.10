@@ -243,3 +243,18 @@ master.techmogun.local | SUCCESS => {
 "ping": "pong"
 }
 ```
+Step 16: We are ready to install OpenShift Origin
+Prerequisites will check all dependencies and will start the required services automatically
+```sh
+ansible-playbook -i openshift_inventory playbooks/prerequisites.yml
+```
+if it is shown anything in Red please address that before moving to the next step
+
+Step 17: This playbook will install the openshift origin
+```sh
+ansible-playbook -i openshift_inventory playbooks/deploy_cluster.yml
+```
+Step 18: Post Validation of the installation
+```sh
+[root@master ~]# oc login -u system:admin -n default
+
