@@ -45,15 +45,17 @@ DOMAIN="local"
 Step 6:
 On ansible control server (we can use the same master machine) generate ssh key pair and copy a public key over to master
 ```sh
-$ ssh-keygen -t RSA
-
-$ ssh-copy-id root@master
-...
+[root@master ~]# ssh-copy-id root@master
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
+The authenticity of host 'master (192.168.10.5)' can't be established.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
 root@master's password:
 
 Number of key(s) added: 1
 
-Now try logging into the machine, with: "ssh 'root@master'"
+Now try logging into the machine, with:   "ssh 'root@master'"
 and check to make sure that only the key(s) you wanted were added.
 
 $ ssh root@master
