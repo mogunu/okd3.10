@@ -1,5 +1,6 @@
 # okd3.10
 [![N|Solid](https://techm.000webhostapp.com/wp-content/uploads/2017/06/cropped-logo.png](https://techmogun.com)
+[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://nodesource.com/products/nsolid)
 Installing OpenShift Origin
 
 Step 1. Create the CentOS 7 base image.
