@@ -74,12 +74,40 @@ VG=docker-vg
 EOF
 
 $ sudo docker-storage-setup
+output will be
+[root@master ~]# sudo docker-storage-setup
+INFO: Writing zeros to first 4MB of device /dev/sdb
+4+0 records in
+4+0 records out
+4194304 bytes (4.2 MB) copied, 0.231969 s, 18.1 MB/s
+INFO: Device node /dev/sdb1 exists.
+  Physical volume "/dev/sdb1" successfully created.
+  Volume group "docker-vg" successfully created
+  Rounding up size to full physical extent 104.00 MiB
+  Thin pool volume with chunk size 512.00 KiB can address at most 126.50 TiB of data.
+  Logical volume "docker-pool" created.
+  Logical volume docker-vg/docker-pool changed.
+
 ```
 ## Check results
 ```sh
 $ lsblk
+Output like below
+NAME                              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                                 8:0    0   50G  0 disk
+├─sda1                              8:1    0    1G  0 part /boot
+└─sda2                              8:2    0   49G  0 part
+  ├─centos-root                   253:0    0 44.2G  0 lvm  /
+  └─centos-swap                   253:1    0  4.8G  0 lvm  [SWAP]
+sdb                                 8:16   0  100G  0 disk
+└─sdb1                              8:17   0  100G  0 part
+  ├─docker--vg-docker--pool_tmeta 253:2    0  104M  0 lvm
+  │ └─docker--vg-docker--pool     253:4    0 39.8G  0 lvm
+  └─docker--vg-docker--pool_tdata 253:3    0 39.8G  0 lvm
+    └─docker--vg-docker--pool     253:4    0 39.8G  0 lvm
+sr0                                11:0    1 1024M  0 rom
 
-$ sudo shutdown -h now
+$ sudo shutdown -r now
 ```
 Step 8:
 On ansible control server test DNS for master server
